@@ -1,4 +1,5 @@
 import Post from "../models/Post.js";
+import { UploadImage } from "../libs/clodinary.js";
 
 export const GetPosts = async (req, res) =>{
     try {
@@ -11,10 +12,21 @@ export const GetPosts = async (req, res) =>{
 
 export const PostPosts = async (req, res) =>{
     try {
+
+        let image;
+
         const {title, description} = req.body;
 
-        const newPost = new Post({title, description});
+        if (req.files.image){
+            const respon = await UploadImage(req.files.image.tempFilePath);
+            image = {
+                url: respon.secure_url,
+                public_id: respon.public_id
+            }
+        }
 
+        const newPost = new Post({title, description, image});
+        
         await newPost.save();
 
         return res.json(newPost);
